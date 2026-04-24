@@ -8,18 +8,32 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
+// Pastikan request menggunakan method POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: ganti-password.php");
+    exit();
+}
+
 // Include file konfigurasi database
 include 'config.php';
 
 // Mendapatkan data dari form
-$new_username = trim($_POST['new_username']);
-$new_password = hash('sha256', trim($_POST['new_password']));
+$new_username = isset($_POST['new_username']) ? trim($_POST['new_username']) : '';
+$raw_password = isset($_POST['new_password']) ? trim($_POST['new_password']) : '';
+
+// Validasi input
+if (empty($new_username) || empty($raw_password)) {
+    header("Location: ganti-password.php?error=empty_input");
+    exit();
+}
+
+$new_password = hash('sha256', $raw_password);
  // Hash password untuk keamanan
 $current_username = $_SESSION['username'];
 
-// Periksa apakah username baru sudah ada
-$stmt = $conn->prepare("SELECT * FROM suket_admin WHERE username = ?");
-$stmt->bind_param("s", $new_username);
+// Periksa apakah username baru sudah ada (dan bukan milik user saat ini)
+$stmt = $conn->prepare("SELECT * FROM suket_admin WHERE username = ? AND username != ?");
+$stmt->bind_param("ss", $new_username, $current_username);
 $stmt->execute();
 $stmt->store_result();
 

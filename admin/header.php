@@ -61,7 +61,7 @@
                             <ul class="dropdown-menu">
                                 <li class="nav-item"><a class="nav-link" href="data-desa.php">Profil Desa</a></li>
                                 <li class="nav-item"><a class="nav-link" href="nomor-surat.php">Nomor Register Surat</a></li>
-                                <li class="nav-item"><a class="nav-link" href="update-password.php">Ganti Password</a></li>
+                                <li class="nav-item"><a class="nav-link" href="ganti-password.php">Ganti Password</a></li>
                             </ul>
                         </li>
                         <li class="nav-item dropdown">

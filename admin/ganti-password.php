@@ -51,7 +51,7 @@ if (isset($_GET['error']) && $_GET['error'] == 'username_exists') {
             <form action="update-password.php" method="POST">
                     <div class="form-group">
                         <label for="new_username">Username baru</label>
-                        <input type="text" name="new_username" id="new_username" class="form-control" required>
+                        <input type="text" name="new_username" id="new_username" class="form-control" value="<?php echo htmlspecialchars($_SESSION['username']); ?>" required>
                     </div>
                     <div class="form-group">
                         <label for="new_password">Password baru</label>
