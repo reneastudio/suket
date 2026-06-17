@@ -34,7 +34,7 @@ try {
     $alamatEmailAdmin = $desa['alamat_email'];
 
     // Ambil NIK dari POST data
-    $nikPemohon = isset($_POST['nik']) ? trim($_POST['nik']) : null;
+    $nikPemohon = isset($_POST['nik']) ? preg_replace('/[^a-zA-Z0-9]/', '', $_POST['nik']) : null;
     $namaLengkapPemohon = 'Pemohon'; // Default jika NIK tidak ada atau tidak ditemukan
     $pdfFileName = 'Surat_Keterangan_Belum_Menikah.pdf'; // Default PDF name
 

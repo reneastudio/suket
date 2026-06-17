@@ -266,13 +266,13 @@ include 'header.php';
                         <div class="mb-3">
                             <label for="nama_desa" class="form-label">Nama Desa</label>
                             <input type="text" class="form-control" id="nama_desa" name="nama_desa" 
-                                value="<?php echo isset($data_desa['nama_desa']) ? $data_desa['nama_desa'] : ''; ?>" required>
+                                value="<?php echo isset($data_desa['nama_desa']) ? htmlspecialchars($data_desa['nama_desa']) : ''; ?>" required>
                         </div>
                         
                         <div class="mb-3">
                             <label for="nama_kepala_desa" class="form-label">Nama Kepala Desa</label>
                             <input type="text" class="form-control" id="nama_kepala_desa" name="nama_kepala_desa" 
-                                value="<?php echo isset($data_desa['nama_kepala_desa']) ? $data_desa['nama_kepala_desa'] : ''; ?>" required>
+                                value="<?php echo isset($data_desa['nama_kepala_desa']) ? htmlspecialchars($data_desa['nama_kepala_desa']) : ''; ?>" required>
                             
                             <input type="checkbox" class="form-check-input" id="pj_kepala_desa" name="pj_kepala_desa" value="1" <?php echo (isset($data_desa['pj_kepala_desa']) && $data_desa['pj_kepala_desa']) ? 'checked' : ''; ?>>
                             <label class="form-check-label text-muted" for="pj_kepala_desa">Centang jika Pj. Kepala Desa</label>
@@ -281,32 +281,32 @@ include 'header.php';
                         <div class="mb-3">
                             <label for="nip_kepala_desa" class="form-label">NIP Kepala Desa</label>
                             <input type="text" class="form-control" id="nip_kepala_desa" name="nip_kepala_desa" 
-                                value="<?php echo isset($data_desa['nip_kepala_desa']) ? $data_desa['nip_kepala_desa'] : ''; ?>">
+                                value="<?php echo isset($data_desa['nip_kepala_desa']) ? htmlspecialchars($data_desa['nip_kepala_desa']) : ''; ?>">
                         </div>
                         
                         <div class="mb-3">
                             <label for="alamat_balai_desa" class="form-label">Alamat Balai Desa</label>
                             <textarea class="form-control" id="alamat_balai_desa" name="alamat_balai_desa" rows="3" required><?php 
-                                echo isset($data_desa['alamat_balai_desa']) ? $data_desa['alamat_balai_desa'] : ''; 
+                                echo isset($data_desa['alamat_balai_desa']) ? htmlspecialchars($data_desa['alamat_balai_desa']) : '';
                             ?></textarea>
                         </div>
                         
                         <div class="mb-3">
                             <label for="data_kecamatan" class="form-label">Kecamatan</label>
                             <input type="text" class="form-control" id="data_kecamatan" name="data_kecamatan" 
-                                value="<?php echo isset($data_desa['data_kecamatan']) ? $data_desa['data_kecamatan'] : ''; ?>" required>
+                                value="<?php echo isset($data_desa['data_kecamatan']) ? htmlspecialchars($data_desa['data_kecamatan']) : ''; ?>" required>
                         </div>
                         
                         <div class="mb-3">
                             <label for="data_kabupaten" class="form-label">Kabupaten</label>
                             <input type="text" class="form-control" id="data_kabupaten" name="data_kabupaten" 
-                                value="<?php echo isset($data_desa['data_kabupaten']) ? $data_desa['data_kabupaten'] : ''; ?>" required>
+                                value="<?php echo isset($data_desa['data_kabupaten']) ? htmlspecialchars($data_desa['data_kabupaten']) : ''; ?>" required>
                         </div>
                         
                         <div class="mb-3">
                             <label for="data_provinsi" class="form-label">Provinsi</label>
                             <input type="text" class="form-control" id="data_provinsi" name="data_provinsi" 
-                                value="<?php echo isset($data_desa['data_provinsi']) ? $data_desa['data_provinsi'] : ''; ?>" required>
+                                value="<?php echo isset($data_desa['data_provinsi']) ? htmlspecialchars($data_desa['data_provinsi']) : ''; ?>" required>
                         </div>
                     </div>
                     
@@ -314,13 +314,13 @@ include 'header.php';
                     <div class="col-md-6"><div class="mb-3">
                             <label for="nomor_whatsapp" class="form-label">Nomor WhatsApp</label>
                             <input type="text" class="form-control" id="nomor_whatsapp" name="nomor_whatsapp" 
-                                value="<?php echo isset($data_desa['nomor_whatsapp']) ? $data_desa['nomor_whatsapp'] : ''; ?>" required>
+                                value="<?php echo isset($data_desa['nomor_whatsapp']) ? htmlspecialchars($data_desa['nomor_whatsapp']) : ''; ?>" required>
                         </div>
                         
                         <div class="mb-3">
                             <label for="alamat_email" class="form-label">Alamat Email</label>
                             <input type="email" class="form-control" id="alamat_email" name="alamat_email" 
-                                value="<?php echo isset($data_desa['alamat_email']) ? $data_desa['alamat_email'] : ''; ?>" required>
+                                value="<?php echo isset($data_desa['alamat_email']) ? htmlspecialchars($data_desa['alamat_email']) : ''; ?>" required>
                         </div>
                         
                         <div class="mb-3">
