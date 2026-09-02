@@ -110,7 +110,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
     
+    // Upload QR Code TTE jika ada
+    $qr_tte = null;
+    if (!empty($_FILES['qr_tte']['name']) && $_FILES['qr_tte']['error'] === UPLOAD_ERR_OK) {
+        $upload_result = uploadFile($_FILES['qr_tte'], $upload_dir);
+        if (isset($upload_result['error'])) {
+            $error = $upload_result['error'];
+        } else {
+            $qr_tte = $upload_result['success'];
+        }
+    }
+
     try {
+        // Cek apakah kolom qr_tte sudah ada di tabel data_desa, jika belum tambahkan
+        $col_check = $conn->query("SHOW COLUMNS FROM data_desa LIKE 'qr_tte'");
+        if ($col_check && $col_check->num_rows === 0) {
+            $conn->query("ALTER TABLE data_desa ADD COLUMN qr_tte VARCHAR(255) DEFAULT NULL AFTER kop_surat");
+        }
+
         // Cek apakah data sudah ada di database
         $check_query = "SELECT * FROM data_desa LIMIT 1";
         $check_result = $conn->query($check_query);
@@ -125,8 +142,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $id = $row['id'];
             
             // Jika tidak upload file baru, gunakan file yang lama
-            if ($logo_desa === null) $logo_desa = $row['logo_desa'];
-            if ($kop_surat === null) $kop_surat = $row['kop_surat'];
+            if ($logo_desa === null) $logo_desa = isset($row['logo_desa']) ? $row['logo_desa'] : null;
+            if ($kop_surat === null) $kop_surat = isset($row['kop_surat']) ? $row['kop_surat'] : null;
+            if ($qr_tte === null) $qr_tte = isset($row['qr_tte']) ? $row['qr_tte'] : null;
             
             $stmt = $conn->prepare("UPDATE data_desa SET 
                 nama_desa = ?, 
@@ -136,6 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 alamat_email = ?, 
                 logo_desa = ?, 
                 kop_surat = ?,
+                qr_tte = ?,
                 data_kecamatan = ?,
                 data_kabupaten = ?,
                 data_provinsi = ?,
@@ -146,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 throw new Exception("Prepare failed: " . $conn->error);
             }
             
-            $stmt->bind_param("ssssssssssisi", 
+            $stmt->bind_param("sssssssssssisi",
                 $nama_desa, 
                 $nama_kepala_desa, 
                 $alamat_balai_desa, 
@@ -154,6 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $alamat_email, 
                 $logo_desa, 
                 $kop_surat,
+                $qr_tte,
                 $data_kecamatan,
                 $data_kabupaten,
                 $data_provinsi,
@@ -170,17 +190,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 alamat_email, 
                 logo_desa, 
                 kop_surat,
+                qr_tte,
                 data_kecamatan,
                 data_kabupaten,
                 data_provinsi,
                 nip_kepala_desa,
                 pj_kepala_desa) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             if (!$stmt) {
                 throw new Exception("Prepare failed: " . $conn->error);
             }
             
-            $stmt->bind_param("sssssssssssi", 
+            $stmt->bind_param("ssssssssssssi",
                 $nama_desa, 
                 $nama_kepala_desa, 
                 $alamat_balai_desa, 
@@ -188,6 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $alamat_email, 
                 $logo_desa, 
                 $kop_surat,
+                $qr_tte,
                 $data_kecamatan,
                 $data_kabupaten,
                 $data_provinsi,
@@ -352,6 +374,22 @@ include 'header.php';
                                 </div>
                             <?php endif; ?>
                         </div>
+
+                        <div class="mb-3">
+                            <label for="qr_tte" class="form-label">QR Code Stempel TTE (Optional Custom Image)</label>
+                            <input type="file" class="form-control" id="qr_tte" name="qr_tte" accept="image/*">
+                            <small class="text-muted">Jika diunggah, gambar ini akan digunakan sebagai QR Code/Stempel TTE di surat. Jika tidak diunggah, QR Code akan dibuat secara otomatis berbasis PHP QR Code library.</small>
+                            <?php if (isset($data_desa['qr_tte']) && !empty($data_desa['qr_tte'])): ?>
+                                <div class="mt-2">
+                                    <img src="../assets/images/<?php echo $data_desa['qr_tte']; ?>" class="img-preview" id="qr_tte_preview">
+                                    <p class="text-muted">File saat ini: <?php echo $data_desa['qr_tte']; ?></p>
+                                </div>
+                            <?php else: ?>
+                                <div class="mt-2">
+                                    <img src="" class="img-preview" id="qr_tte_preview" style="display:none;">
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
                 
@@ -377,6 +415,21 @@ include 'header.php';
                 preview.style.display = 'block';
             }
             
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('qr_tte').addEventListener('change', function(e) {
+            const preview = document.getElementById('qr_tte_preview');
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+
             if (file) {
                 reader.readAsDataURL(file);
             }

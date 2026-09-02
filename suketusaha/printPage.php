@@ -132,11 +132,20 @@ include 'header.php';
         
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col offset-md-6 tanda-tangan">
+                                        <div class="row">
+                        <div class="col offset-md-6 tanda-tangan text-center">
                             <p><span class="nama_desa"></span>, <span id="tanggal_sekarang"></span> <br> <span class="jabatan_kepala_desa">Kepala Desa</span> <span class="nama_desa"></span></p>
-                            <br>&nbsp;<br>&nbsp;<br>
-                            <p><strong><u><span class="nama_kepala_desa"></span></u></strong><br/><span class="nip-line" style="display:none;">NIP. <span class="nip_kepala_desa"></span></span></p>
+                            <div class="tte-box my-2 p-2 border rounded text-center style-tte" style="display: inline-block; text-align: center; border: 1px solid #000 !important; padding: 6px; margin: 5px 0;">
+                                <small style="font-size: 9px; display: block; margin-bottom: 3px; font-weight: bold;">Ditandatangani secara elektronik oleh:</small>
+                                <?php if (!empty($data_desa['qr_tte'])): ?>
+                                    <img src="../assets/images/<?php echo $data_desa['qr_tte']; ?>" alt="QR Code TTE" style="width: 80px; height: 80px; object-fit: contain;">
+                                <?php else: ?>
+                                    <img src="../generate_qrcode.php?text=<?php echo urlencode('Dokumen ini telah ditandatangani secara elektronik oleh Kepala Desa ' . ($data_desa['nama_desa'] ?? '') . ' (' . ($data_desa['nama_kepala_desa'] ?? '') . ')'); ?>" alt="QR Code TTE" style="width: 80px; height: 80px; object-fit: contain;">
+                                <?php endif; ?>
+                                <small style="font-size: 8px; display: block; margin-top: 3px; color: #555;">Tersertifikasi Digital</small>
+                            </div>
+                            <p class="mb-0"><strong><u><span class="nama_kepala_desa"></span></u></strong></p>
+                            <p class="nip-line" style="display:none; margin-top:0;"><small>NIP. <span class="nip_kepala_desa"></span></small></p>
                         </div>
                     </div>
                 </div>
