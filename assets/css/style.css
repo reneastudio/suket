@@ -482,6 +482,16 @@ dd {
     text-align: center;
 }
 
+.qr_tte_container {
+    text-align: center;
+    margin: 5px auto;
+}
+
+.qr-tte-img {
+    display: inline-block;
+    margin: 0 auto;
+}
+
 .garis-bawah {
     text-decoration: underline;
     font-weight: 700;
