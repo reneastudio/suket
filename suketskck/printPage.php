@@ -7,6 +7,26 @@ $query = "SELECT * FROM data_desa LIMIT 1";
 $result = $conn->query($query);
 $data_desa = $result->num_rows > 0 ? $result->fetch_assoc() : null;
 
+// Persiapkan QR Code TTE jika tidak ada custom qr_tte image
+$qr_tte_src = '';
+if (!empty($data_desa['qr_tte']) && file_exists(__DIR__ . '/../assets/images/' . $data_desa['qr_tte'])) {
+    $qr_tte_src = '../assets/images/' . $data_desa['qr_tte'];
+} else {
+    try {
+        if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+            require_once __DIR__ . '/../vendor/autoload.php';
+            $qrText = 'Dokumen ini telah ditandatangani secara elektronik oleh Kepala Desa ' . ($data_desa['nama_desa'] ?? '') . ' (' . ($data_desa['nama_kepala_desa'] ?? '') . ')';
+            $qrCode = new \Endroid\QrCode\QrCode($qrText);
+            $writer = new \Endroid\QrCode\Writer\PngWriter();
+            $result = $writer->write($qrCode);
+            $qr_tte_src = $result->getDataUri();
+        }
+    } catch (\Exception $e) {
+        $qr_tte_src = '';
+    }
+}
+
+
 // Ambil nomor surat untuk suket_skck
 $query = "SELECT nomor_surat FROM nomor_register WHERE nama_surat = 'suket_skck' LIMIT 1";
 $result = $conn->query($query);
@@ -141,11 +161,7 @@ include 'header.php';
                             <p><span class="nama_desa"></span>, <span id="tanggal_sekarang"></span> <br> <span class="jabatan_kepala_desa">Kepala Desa</span> <span class="nama_desa"></span></p>
                             <div class="tte-box my-2 p-2 border rounded text-center style-tte" style="display: inline-block; text-align: center; border: 1px solid #000 !important; padding: 6px; margin: 5px 0;">
                                 <small style="font-size: 9px; display: block; margin-bottom: 3px; font-weight: bold;">Ditandatangani secara elektronik oleh:</small>
-                                <?php if (!empty($data_desa['qr_tte'])): ?>
-                                    <img src="../assets/images/<?php echo $data_desa['qr_tte']; ?>" alt="QR Code TTE" style="width: 80px; height: 80px; object-fit: contain;">
-                                <?php else: ?>
-                                    <img src="../generate_qrcode.php?text=<?php echo urlencode('Dokumen ini telah ditandatangani secara elektronik oleh Kepala Desa ' . ($data_desa['nama_desa'] ?? '') . ' (' . ($data_desa['nama_kepala_desa'] ?? '') . ')'); ?>" alt="QR Code TTE" style="width: 80px; height: 80px; object-fit: contain;">
-                                <?php endif; ?>
+                                <img src="<?php echo $qr_tte_src; ?>" alt="QR Code TTE" style="width: 80px; height: 80px; object-fit: contain;">
                                 <small style="font-size: 8px; display: block; margin-top: 3px; color: #555;">Tersertifikasi Digital</small>
                             </div>
                             <p class="mb-0"><strong><u><span class="nama_kepala_desa"></span></u></strong></p>
