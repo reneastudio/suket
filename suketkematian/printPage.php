@@ -139,7 +139,7 @@ include 'header.php';
                     <div class="row">
                         <div class="col offset-md-6 tanda-tangan">
                             <p><span class="nama_desa"></span>, <span id="tanggal_sekarang"></span> <br> <span class="jabatan_kepala_desa">Kepala Desa</span> <span class="nama_desa"></span></p>
-                            <br>&nbsp;<br>&nbsp;<br>
+                            <div class="qr_tte_container"><br>&nbsp;<br>&nbsp;<br></div>
                             <p><strong><u><span class="nama_kepala_desa"></span></u></strong><br/><span class="nip-line" style="display:none;">NIP. <span class="nip_kepala_desa"></span></span></p>
                         </div>
                     </div>

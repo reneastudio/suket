@@ -7,6 +7,31 @@ if (session_status() == PHP_SESSION_NONE) {
 // Include file konfigurasi database
 require_once 'config.php';
 
+// Ensure column qr_tte exists in data_desa table
+$check_col = $conn->query("SHOW COLUMNS FROM data_desa LIKE 'qr_tte'");
+if ($check_col && $check_col->num_rows == 0) {
+    $conn->query("ALTER TABLE data_desa ADD COLUMN qr_tte VARCHAR(255) NULL");
+}
+
+// Handler hapus QR Code TTE via AJAX
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_qr_tte') {
+    header('Content-Type: application/json');
+    $query = "SELECT qr_tte FROM data_desa LIMIT 1";
+    $result = $conn->query($query);
+    if ($result && $result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        if (!empty($row['qr_tte'])) {
+            $file_path = __DIR__ . "/../assets/images/" . $row['qr_tte'];
+            if (file_exists($file_path)) {
+                @unlink($file_path);
+            }
+            $conn->query("UPDATE data_desa SET qr_tte = NULL");
+        }
+    }
+    echo json_encode(['success' => true]);
+    exit();
+}
+
 // Ambil data desa
 $query = "SELECT * FROM data_desa LIMIT 1";
 $result = $conn->query($query);
@@ -110,6 +135,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
     
+    // Upload QR Code TTE jika ada
+    $qr_tte = null;
+    if (!empty($_FILES['qr_tte']['name']) && $_FILES['qr_tte']['error'] === UPLOAD_ERR_OK) {
+        $upload_result = uploadFile($_FILES['qr_tte'], $upload_dir);
+        if (isset($upload_result['error'])) {
+            $error = $upload_result['error'];
+        } else {
+            $qr_tte = $upload_result['success'];
+        }
+    }
+
     try {
         // Cek apakah data sudah ada di database
         $check_query = "SELECT * FROM data_desa LIMIT 1";
@@ -127,7 +163,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Jika tidak upload file baru, gunakan file yang lama
             if ($logo_desa === null) $logo_desa = $row['logo_desa'];
             if ($kop_surat === null) $kop_surat = $row['kop_surat'];
-            
+            if ($qr_tte === null) $qr_tte = isset($row['qr_tte']) ? $row['qr_tte'] : null;
+
             $stmt = $conn->prepare("UPDATE data_desa SET 
                 nama_desa = ?, 
                 nama_kepala_desa = ?, 
@@ -140,13 +177,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 data_kabupaten = ?,
                 data_provinsi = ?,
                 nip_kepala_desa = ?,
-                pj_kepala_desa = ?
+                pj_kepala_desa = ?,
+                qr_tte = ?
                 WHERE id = ?");
             if (!$stmt) {
                 throw new Exception("Prepare failed: " . $conn->error);
             }
             
-            $stmt->bind_param("ssssssssssisi", 
+            $stmt->bind_param("ssssssssssissi",
                 $nama_desa, 
                 $nama_kepala_desa, 
                 $alamat_balai_desa, 
@@ -159,6 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $data_provinsi,
                 $nip_kepala_desa,
                 $pj_kepala_desa,
+                $qr_tte,
                 $id);
         } else {
             // Insert data baru
@@ -174,13 +213,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 data_kabupaten,
                 data_provinsi,
                 nip_kepala_desa,
-                pj_kepala_desa) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                pj_kepala_desa,
+                qr_tte)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             if (!$stmt) {
                 throw new Exception("Prepare failed: " . $conn->error);
             }
             
-            $stmt->bind_param("sssssssssssi", 
+            $stmt->bind_param("sssssssssssis",
                 $nama_desa, 
                 $nama_kepala_desa, 
                 $alamat_balai_desa, 
@@ -192,7 +232,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $data_kabupaten,
                 $data_provinsi,
                 $nip_kepala_desa,
-                $pj_kepala_desa);
+                $pj_kepala_desa,
+                $qr_tte);
         }
         
         if ($stmt->execute()) {
@@ -352,6 +393,22 @@ include 'header.php';
                                 </div>
                             <?php endif; ?>
                         </div>
+
+                        <div class="mb-3">
+                            <label for="qr_tte" class="form-label">QR Code TTE (Tanda Tangan Elektronik)</label>
+                            <input type="file" class="form-control" id="qr_tte" name="qr_tte" accept="image/*">
+                            <div id="qr_tte_container" class="mt-2">
+                                <?php if (isset($data_desa['qr_tte']) && !empty($data_desa['qr_tte'])): ?>
+                                    <img src="../assets/images/<?php echo $data_desa['qr_tte']; ?>" class="img-preview" id="qr_preview">
+                                    <p class="text-muted mb-2" id="qr_filename">File saat ini: <?php echo $data_desa['qr_tte']; ?></p>
+                                    <button type="button" class="btn btn-danger btn-sm" id="btn_delete_qr">Hapus QR Code</button>
+                                <?php else: ?>
+                                    <img src="" class="img-preview" id="qr_preview" style="display:none;">
+                                    <p class="text-muted mb-2" id="qr_filename" style="display:none;"></p>
+                                    <button type="button" class="btn btn-danger btn-sm" id="btn_delete_qr" style="display:none;">Hapus QR Code</button>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -394,6 +451,56 @@ include 'header.php';
             
             if (file) {
                 reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('qr_tte').addEventListener('change', function(e) {
+            const preview = document.getElementById('qr_preview');
+            const btnDelete = document.getElementById('btn_delete_qr');
+            const filenameText = document.getElementById('qr_filename');
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('btn_delete_qr')?.addEventListener('click', function() {
+            if (confirm('Apakah Anda yakin ingin menghapus gambar QR Code TTE?')) {
+                const formData = new FormData();
+                formData.append('action', 'delete_qr_tte');
+
+                fetch('data-desa.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const preview = document.getElementById('qr_preview');
+                        const btnDelete = document.getElementById('btn_delete_qr');
+                        const filenameText = document.getElementById('qr_filename');
+                        const inputQr = document.getElementById('qr_tte');
+
+                        if (preview) { preview.src = ''; preview.style.display = 'none'; }
+                        if (filenameText) { filenameText.innerText = ''; filenameText.style.display = 'none'; }
+                        if (btnDelete) { btnDelete.style.display = 'none'; }
+                        if (inputQr) { inputQr.value = ''; }
+                        alert('QR Code TTE berhasil dihapus.');
+                    } else {
+                        alert('Gagal menghapus QR Code TTE.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat menghapus QR Code TTE.');
+                });
             }
         });
     </script>

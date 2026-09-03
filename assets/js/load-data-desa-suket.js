@@ -58,5 +58,16 @@ fetch('../get_desa_data.php')
                     el.src = '../assets/uploads/' + data.kop_surat;
                 });
             }
+
+            // Untuk QR Code TTE
+            document.querySelectorAll('.qr_tte_container').forEach(el => {
+                if (data.qr_tte) {
+                    el.innerHTML = '<img src="../assets/images/' + data.qr_tte + '" class="qr-tte-img" alt="QR Code TTE" style="max-width: 100px; max-height: 100px; margin: 10px 0;">';
+                    el.style.display = 'block';
+                } else {
+                    el.innerHTML = '<br>&nbsp;<br>&nbsp;<br>';
+                    el.style.display = 'block';
+                }
+            });
         }
     });
