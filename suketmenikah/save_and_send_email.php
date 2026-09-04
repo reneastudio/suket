@@ -90,19 +90,8 @@ try {
         throw new Exception('File PDF tidak ditemukan atau ada masalah saat upload. Kode Error: ' . $errCode);
     }
 
-    // Server settings untuk Email
-    $mail->SMTPDebug = SMTP::DEBUG_OFF;
-    $mail->isSMTP();
-    $mail->Host       = 'mail.suketdesa.id';
-    $mail->SMTPAuth   = true;
-    $mail->Username   = 'support@suketdesa.id';
-    $mail->Password   = 'rkeblq50PS!';
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-    $mail->Port       = 465;
+    require_once '../admin/email_config.php';
 
-    //Recipients
-    $mail->setFrom('support@suketdesa.id', 'Sistem Informasi Desa');
-    $mail->addAddress($alamatEmailAdmin); 
 
     //Attachments
     $mail->addAttachment($uploadPath, $pdfFileName);
